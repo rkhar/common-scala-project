@@ -1,0 +1,108 @@
+replicaCount: 1
+image:
+  repository: REPOSITORY # Managed during pipeline
+  tag: IMAGE_TAG   # Managed during pipeline
+  pullPolicy: Always
+
+nameOverride: qa-fintel-main-api
+fullnameOverride: qa-fintel-main-api
+
+configPath: /config
+containerPort: 8080
+service:
+  type: ClusterIP
+  targetPort: 8080
+  port: 80
+
+imagePullSecrets: PULL_SECRET # Managed during pipeline
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "ingress"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite /api/(.*) /$1 break;
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "X-Context,DNT,X-CustomHeader,X-OwnerContext,X-PerformerContext,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,X-Authentication-Chain,Source,X-MerchantContext"
+    nginx.ingress.kubernetes.io/cors-max-age: "3600"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+  path: /api/
+  hosts:
+    - fintel-api.dar-qa.zone
+  tls:
+    - secretName: dar-qa-secret
+      hosts:
+        - fintel-api.dar-qa.zone
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+enviroment: qa
+
+env:
+  WALLET_QUEUE_SIZE:                           "100"
+  WALLET_ENDPOINT:                             "https://fintel-wallet-core.dar-qa.zone"
+  WALLET_PREFIX:                               "/api"
+  CUSTOMER_QUEUE_SIZE:                         "100"
+  CUSTOMER_ENDPOINT:                           "https://fintel-customer-core.dar-qa.zone"
+  CUSTOMER_PREFIX:                             "/api"
+  DOCUMENT_QUEUE_SIZE:                         "50"
+  DOCUMENT_ENDPOINT:                           "https://fintel-api.dar-qa.zone"
+  DOCUMENT_PREFIX:                             "/api"
+  DOC_PATH:                                    "/root/documents"
+  ZEEBE_QUEUE_SIZE:                            "100"
+  ZEEBE_ENDPOINT:                              "http://fintel-zeebe-recieve-api.dar-qa.zone/zeebe"
+  ZEEBE_PREFIX:                                ""
+  NOTIFICATION_QUEUE_SIZE:                     "50"
+  NOTIFICATION_ENDPOINT:                       "https://fintel-notification-gateway.dar-qa.zone"
+  NOTIFICATION_PREFIX:                         "/api"
+  FAQ_QUEUE_SIZE:                              "50"
+  FAQ_ENDPOINT:                                "https://fintel-customer-core.dar-qa.zone"
+  FAQ_PREFIX:                                  "/api"
+  STATISTICS_QUEUE_SIZE:                       "100"
+  STATISTICS_ENDPOINT:                         "https://api.binance.com"
+  STATISTICS_PREFIX:                           "/api"
+  SWAGGER_HOST:                                "fintel-api.dar-qa.zone"
+  SWAGGER_SCHEMES:                             "https"
+  SERVICE_TIMEOUT:                             "60"
+  RECONNECTION_DELAY:                          "60"
+  REQUEST_TIMEOUT:                             "60"
+  JAVA_OPTS:                                   "-server -Xms256M -Xmx256M"
+  LOGBACK:                                     "/root/config/colourful-logback.xml"
+  LOG_LEVEL:                                   "INFO"
+  TZ:                                          "Asia/Almaty"
+  MAIN_URL:                                    "https://fintel-api.dar-qa.zone/api/v1/documents/"
+  DOCUMENTS_URL:                               "/root/documents"
+  AUTH_JWT_PUBLIC_KEY:                         "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAzOUERZ0JwfMUUfeWGWBQBDdQ9a0vHWpvP8TCym3oh0F0rnLToOYVNVseEdSKzwhggsaxjIcrRcVuuDdeef15ZupAlYFEpoR8Q61GNGyLX9gtUxH2hBgLX1tOx90vkVfkdwrsQbruSW4l34GG/b69NdLWSK+uaMFHpNjxxEVYhI9zF0zrsqPma8XWeZnI+anR0w8CMgziTXwjKo08zUPd/u0/tWS34S2dUgi/kSWKwHliFXngg3xTvEvMFdrInCzixRKl1Gcde+5q7urK+z6X5nYOzQzh/++6lifyeg8cwNWk/v0vQT/YfsXDOl+4MxGT5X/K/gyZuM35H6nSHzoxuQIDAQAB"
+  AUTH_JWT_ACL_KEY:                            "ttm.wallet"
+  REDIS_HOST:                                  "qa-redis-e59dbb1-001.qa-redis-e59dbb1.2dfdbm.euw1.cache.amazonaws.com"
+  REDIS_PORT:                                  "6379"
+  REDIS_TOKEN:                                 "1NEuM3Ohma74e9d0T"
+  REDIS_24H_TICKER_KEY:                        "24h-ticker"
+  REDIS_BOOK_TICKER_KEY:                       "book-ticker"
+  REDIS_DATABASE:                              "1"
+  HASH_KEY:                                    "someKey"
+  DELETE_PROFILE_PROCESS_ID:                   "deleteProfile"
+  BLOCK_PROFILE_PROCESS_ID:                    "blockProfile"
+  TOPUP_PROCESS_ID:                            "topup"
+  WITHDRAW_PROCESS_ID:                         "withdraw"
+  EXCHANGE_PROCESS_ID:                         "exchange"
+  TRANSFER_PROCESS_ID:                         "transfer"
+  ELASTIC_HOSTS:                               "10.255.112.28:9200,10.255.112.26:9200,10.255.112.21:9200"
+  ELASTIC_CRYPTO_OPERATIONS_INDEX:             "qa-fintel-accounting-crypto-operations"
+  AUTH_TEST_CUSTOMER:                          "+70000000001"
+  ENV:                                         "qa"
+  WHITELIST_AUTHORIZATION_IDS:                 ["cbeef9c3-af59-4a2e-9011-cb76d13b39b5"]
+  WHITELIST_AUTHORIZATION_ENABLED:             "false"

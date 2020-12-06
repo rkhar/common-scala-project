@@ -1,0 +1,112 @@
+replicaCount: 1
+image:
+  repository: REPOSITORY # Managed during pipeline
+  tag: IMAGE_TAG   # Managed during pipeline
+  pullPolicy: Always
+
+nameOverride: dev-fintel-main-api
+fullnameOverride: dev-fintel-main-api
+
+configPath: /config
+containerPort: 8080
+service:
+  type: ClusterIP
+  targetPort: 8080
+  port: 80
+
+imagePullSecrets: PULL_SECRET # Managed during pipeline
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "ingress"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite /api/(.*) /$1 break;
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "X-Context,DNT,X-CustomHeader,X-OwnerContext,X-PerformerContext,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,X-Authentication-Chain,Source,X-MerchantContext"
+    nginx.ingress.kubernetes.io/cors-max-age: "3600"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+  path: /api/
+  hosts:
+    - fintel-api.dar-dev.zone
+  tls:
+    - secretName: dar-dev-secret
+      hosts:
+        - fintel-api.dar-dev.zone
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+enviroment: dev
+
+env:
+  WALLET_QUEUE_SIZE:                           "50"
+  WALLET_ENDPOINT:                             "http://dev-fintel-wallet-core"
+  WALLET_PREFIX:                               "/api"
+  CUSTOMER_QUEUE_SIZE:                         "50"
+  CUSTOMER_ENDPOINT:                           "http://dev-fintel-customer-core"
+  CUSTOMER_PREFIX:                             "/api"
+  DOCUMENT_QUEUE_SIZE:                         "50"
+  DOCUMENT_ENDPOINT:                           "http://fintel-api.dar-dev.zone"
+  DOCUMENT_PREFIX:                             "/api"
+  DOC_PATH:                                    "/root/documents"
+  ZEEBE_QUEUE_SIZE:                            "50"
+  ZEEBE_ENDPOINT:                              "http://dev-fintel-zeebe-recieve-api.dar-dev.zone/zeebe"
+  ZEEBE_PREFIX:                                ""
+  NOTIFICATION_QUEUE_SIZE:                     "50"
+  NOTIFICATION_ENDPOINT:                       "http://dev-fintel-notifications-gateway"
+  NOTIFICATION_PREFIX:                         "/api"
+  FAQ_QUEUE_SIZE:                              "50"
+  FAQ_ENDPOINT:                                "http://dev-fintel-customer-core"
+  FAQ_PREFIX:                                  "/api"
+  STATISTICS_QUEUE_SIZE:                       "50"
+  STATISTICS_ENDPOINT:                         "https://api.binance.com"
+  STATISTICS_PREFIX:                           "/api"
+  SWAGGER_HOST:                                "fintel-api.dar-dev.zone"
+  SWAGGER_SCHEMES:                             "https"
+  SERVICE_TIMEOUT:                             "60"
+  RECONNECTION_DELAY:                          "60"
+  REQUEST_TIMEOUT:                             "60"
+  JAVA_OPTS:                                   "-server -Xms256M -Xmx256M"
+  LOGBACK:                                     "/root/config/colourful-logback.xml"
+  LOG_LEVEL:                                   "INFO"
+  TZ:                                          "Asia/Almaty"
+  MAIN_URL:                                    "http://fintel-api.dar-dev.zone/api/v1/documents/"
+  DOCUMENTS_URL:                               "/root/documents"
+#  AUTH_JWT_PUBLIC_KEY:                         "-----BEGIN RSA PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAvUpVovNtiu4YuYASMI8L\nLpejNsGcM13AFj0uGsjMX6tPf+Dh/89xyM3D5ey0Akaw0x7AT63sU6k0ZsLx4IHG\nbez3cCQ9zRKpHsMgaaM3BUbtzceBz4C8PTQNBX9Fm3DXTI8Jj7t8tQ7Tl7mUcuLc\nLmM2VPw623kLjxKsg9TZRWy3aiDdlfJF31XgO0abNUGguF9ACFgLtCSajaF3MszT\nceZVcIOdvk0GmmSnqa6FMHxN0zxK0kPAj7ZYLMSyxQqE29nN7VphUEOQbnon5S+2\ngTD2geXp0DjuPJie18AVwg2g/PwzvbhtNXIWbb82G6dq5ZfmM3gC8EthQ+yXlfX4\n7QIDAQAB\n-----END RSA PUBLIC KEY-----"
+  AUTH_JWT_PUBLIC_KEY:                         "-----BEGIN RSA PUBLIC KEY-----\nMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwv6ViO6BYOltGR9RV7H7\nKporgYEvgSbfMQv9mLn9yE9QFpjKTG1/jqpWnlK/ROQVdoc+jSCh+602XzwY+mPe\nIo0/kbz1PmakJ4cdqHcTRslfQbHT4fkU6C/FUmPgXZwDrEuKHuab17pefw6K1aqj\n4jb7FLckFNlm7jMQwdG/VYe58Qat2KVl90YR+KKhtVHGwJKOBCmcl12TBQDppZnI\n3oaN1b4eepLHyQgJFqNtwyq7h2uz+T7XKDt86sb19ZVNwjfOpexBtE1KvgQu4jVA\nAvTDNg/lTKlkYu5+fhL9yBnQb6DChkfvw8ikbkmyBbd6rQdN73zz82YGr9iPySkl\npwIDAQAB\n-----END RSA PUBLIC KEY-----"
+  AUTH_JWT_ACL_KEY:                            "ttm.wallet"
+  REDIS_HOST:                                  "dev-redis-f5e0c33-001.dev-redis-f5e0c33.2dfdbm.euw1.cache.amazonaws.com"
+  REDIS_PORT:                                  "6379"
+  REDIS_TOKEN:                                 "1ceQuiqV7PaLSh84"
+  REDIS_24H_TICKER_KEY:                        "24h-ticker"
+  REDIS_BOOK_TICKER_KEY:                       "book-ticker"
+  REDIS_DATABASE:                              "1"
+  DELETE_PROFILE_PROCESS_ID:                   "deleteProfile"
+  BLOCK_PROFILE_PROCESS_ID:                    "blockProfile"
+  TOPUP_PROCESS_ID:                            "topup"
+  WITHDRAW_PROCESS_ID:                         "withdraw"
+  EXCHANGE_PROCESS_ID:                         "exchange"
+  TRANSFER_PROCESS_ID:                         "transfer"
+  DEPOSIT_OPEN_PROCESS_ID:                     "deposit-open"
+  DEPOSIT_WITHDRAWAL_PROCESS_ID:               "deposit-withdrawal"
+  DEPOSIT_REPLENISHMENT_PROCESS_ID:            "deposit-replenishment"
+  DEPOSIT_CLOSURE_PROCESS_ID:                  "deposit-closure"
+  HASH_KEY:                                    "someKey"
+  ELASTIC_HOSTS:                               "10.255.16.29:9200,10.255.16.26:9200,10.255.16.30:9200"
+  ELASTIC_CRYPTO_OPERATIONS_INDEX:             "dev-fintel-accounting-crypto-operations"
+  AUTH_TEST_CUSTOMER:                          "+70000000001"
+  ENV:                                         "dev"
+  WHITELIST_AUTHORIZATION_IDS:                 ["f7e2c901-4474-4f8c-b3ab-ac276098e240"]

@@ -1,0 +1,114 @@
+replicaCount: 1
+image:
+  repository: REPOSITORY # Managed during pipeline
+  tag: IMAGE_TAG   # Managed during pipeline
+  pullPolicy: Always
+
+nameOverride: prod-fintel-main-api
+fullnameOverride: prod-fintel-main-api
+
+configPath: /config
+containerPort: 8080
+service:
+  type: ClusterIP
+  targetPort: 8080
+  port: 80
+
+imagePullSecrets: PULL_SECRET # Managed during pipeline
+
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      rewrite /api/(.*) /$1 break;
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "X-Context,DNT,X-CustomHeader,X-OwnerContext,X-PerformerContext,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization,X-Authentication-Chain,Source,X-MerchantContext"
+    nginx.ingress.kubernetes.io/cors-max-age: "3600"
+    nginx.ingress.kubernetes.io/from-to-www-redirect: "true"
+  path: /api/
+  hosts:
+    - fintel.ukrypto.co.uk
+  tls:
+    - secretName: prod-fintel-fintel-ukrypto-co-uk-tls
+      hosts:
+        - fintel.ukrypto.co.uk
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+nodeSelector:
+  app: ttmm
+tolerations:
+  - key: "app"
+    operator: "Equal"
+    value: "ttmm"
+    effect: "NoExecute"
+affinity: {}
+
+enviroment: prod
+
+env:
+  WALLET_QUEUE_SIZE:                           "100"
+  WALLET_ENDPOINT:                             "http://prod-fintel-wallet-core.prod-fintel.svc.cluster.local"
+  WALLET_PREFIX:                               "/api"
+  CUSTOMER_QUEUE_SIZE:                         "100"
+  CUSTOMER_ENDPOINT:                           "http://prod-fintel-customer-core.prod-fintel.svc.cluster.local"
+  CUSTOMER_PREFIX:                             "/api"
+  DOCUMENT_QUEUE_SIZE:                         "50"
+  DOCUMENT_ENDPOINT:                           "https://fintel.ukrypto.co.uk"
+  DOCUMENT_PREFIX:                             "/api"
+  DOC_PATH:                                    "/root/documents"
+  ZEEBE_QUEUE_SIZE:                            "100"
+  ZEEBE_ENDPOINT:                              "http://prod-fintel-zeebe-recieve-api.prod-zeebe-fintel.svc.cluster.local/zeebe"
+  ZEEBE_PREFIX:                                ""
+  NOTIFICATION_QUEUE_SIZE:                     "50"
+  NOTIFICATION_ENDPOINT:                       "http://prod-fintel-notifications-gateway"
+  NOTIFICATION_PREFIX:                         "/api"
+  FAQ_QUEUE_SIZE:                              "50"
+  FAQ_ENDPOINT:                                "http://prod-fintel-customer-core.prod-fintel.svc.cluster.local"
+  FAQ_PREFIX:                                  "/api"
+  STATISTICS_QUEUE_SIZE:                       "100"
+  STATISTICS_ENDPOINT:                         "https://api.binance.com"
+  STATISTICS_PREFIX:                           "/api"
+  SWAGGER_HOST:                                "fintel.ukrypto.co.uk"
+  SWAGGER_SCHEMES:                             "https"
+  SERVICE_TIMEOUT:                             "60"
+  RECONNECTION_DELAY:                          "60"
+  REQUEST_TIMEOUT:                             "60"
+  JAVA_OPTS:                                   "-server -Xms256M -Xmx256M"
+  LOGBACK:                                     "/root/config/colourful-logback.xml"
+  LOG_LEVEL:                                   "INFO"
+  TZ:                                          "Asia/Almaty"
+  MAIN_URL:                                    "https://fintel.ukrypto.co.uk/api/v1/documents/"
+  DOCUMENTS_URL:                               "/root/documents"
+  AUTH_JWT_PUBLIC_KEY:                         "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAqWn9v+gbApLq5xQ+JNCUjD5QrFoZq+IZ3FeG+wIR7mW965qY7FvHenrThi1UauNRvW0u7a90j9RCkioIMg9PdbS7IIxqSOoEHH5bD3xd65Ejjf8dNOucaY1FNAaVDOinme2NQnSnTzgp/nSfRfofqsnLETJKfGE8zZxAyH0G6PeSS17vrmHC8F1TT/RhzdYX9M6MLMgtKV31L28cnKI4ltQI1QbHfaT8xkcdNfVNfTIYaSNqz4AubWs1J4X7Tl/PQWueSI1glvckwg7/7ScHHDLjjSAkZVXsBhPofAHQ7+HEUXqZFgogGGbiYRKWEKRDrrBjBb/t8mkj98qOxt+6nwIDAQAB"
+  # AUTH_JWT_PUBLIC_KEY:                         "changeME"
+  AUTH_JWT_ACL_KEY:                            "ttm.wallet"
+  REDIS_HOST:                                  "master.fintel-redis-73366b6.2dfdbm.euw1.cache.amazonaws.com"
+  REDIS_PORT:                                  "6379"
+  REDIS_TOKEN:                                 "1NEuM3Ohma74e9d0T"
+  REDIS_24H_TICKER_KEY:                        "24h-ticker"
+  REDIS_BOOK_TICKER_KEY:                       "book-ticker"
+  REDIS_DATABASE:                              "1"
+  HASH_KEY:                                    "someKey"
+  DELETE_PROFILE_PROCESS_ID:                   "deleteProfile"
+  BLOCK_PROFILE_PROCESS_ID:                    "blockProfile"
+  TOPUP_PROCESS_ID:                            "topup"
+  WITHDRAW_PROCESS_ID:                         "withdraw"
+  EXCHANGE_PROCESS_ID:                         "exchange"
+  TRANSFER_PROCESS_ID:                         "transfer"
+  ELASTIC_HOSTS:                               "10.254.11.100:9200,10.254.26.70:9200,10.254.41.215:9200"
+  ELASTIC_CRYPTO_OPERATIONS_INDEX:             "prod-fintel-accounting-crypto-operations"
+  AUTH_TEST_CUSTOMER:                          "+70000000001"
+  ENV:                                         "prod"
+  WHITELIST_AUTHORIZATION_IDS:                 ["ac5d96ec-0611-48cd-be02-cbde3049bd17", "81338e69-89a3-4cf4-b8e6-25cf209b38ad"]
+  WHITELIST_AUTHORIZATION_ENABLED:             "false"
